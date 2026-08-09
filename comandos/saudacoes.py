@@ -1,10 +1,13 @@
 import discord
 from discord.ext import commands
 from datetime import datetime
-from models import Obter_Usuario
-from models.Obter_dia import Manipular_dia
 import random
 import pytz
+
+from models import Obter_Usuario
+from models.Obter_dia import Manipular_dia
+from models.Obter_saudacao import Manipular_saudacao
+
 
 class MonitorarSaudacoes(commands.Cog):
     def __init__(self, bot):
@@ -15,75 +18,39 @@ class MonitorarSaudacoes(commands.Cog):
     async def on_message(self, message):
         if message.author.bot:
             return  # Ignora mensagens de bots
-        id_discord = str(message.author.id)
+
         conteudo = message.content.lower()
-        # Obtém a data e hora no fuso de Brasília
+        saudacao = Manipular_saudacao.detectar_saudacao(conteudo)
+        if not saudacao:
+            return
+
+        id_discord = str(message.author.id)
         agora = datetime.now(self.fuso_brasilia)
-        hora_atual = agora.hour
-        dia_atual = agora.date()
-        # Gera moedas e xp aleatórios
-        moedas_ganhas = random.randint(1, 5)  # Gera entre 10 e 50 moedas
-        xp_ganho = random.randint(10, 50)  # Gera entre 1 e 3 xp
+        nome = message.author.display_name
 
-        # Verifica se o usuário deu bom dia ou boa noite
-        if "bom dia" in conteudo:
-            print(dia_atual)
-            if hora_atual < 12:  # Permite dar bom dia somente antes das 12h
-                bomdia = Manipular_dia.obter_bomdia(message.author.id)
-                if bomdia:
-                    if bomdia["data_bomdia"].date() != dia_atual:
-                        Manipular_dia.registrar_bomdia(message.author.id)
-                        await message.channel.send(
-                            f"Bom dia, {message.author.mention}!"
-                        )
-                    else:
-                        return
-                else:
-                    # Se for a primeira vez, registra e confirma
-                    Manipular_dia.registrar_bomdia(message.author.id)
-                    await message.channel.send(f"Bom dia, {message.author.mention}!")
-            else:
-                await message.channel.send(f"Já passou das 12h!")
-                return
-            usuario_registrado = Obter_Usuario.Manipular_Usuario.obter_usuario(
-                id_discord
-            )
-            if usuario_registrado:
-                usuario_atualizado = Obter_Usuario.Manipular_Usuario.adicionar_moedas(
-                    id_discord, moedas_ganhas
-                )
-                usuario_atualizado = Obter_Usuario.Manipular_Usuario.adicionar_xp(
-                    id_discord, xp_ganho
-                )
-                print(usuario_atualizado)
+        resposta = Manipular_saudacao.obter_resposta(saudacao, agora, nome)
+        await message.channel.send(resposta)
 
-        elif "boa noite" in conteudo:
-            print(dia_atual)
-            if hora_atual >= 18:  # Permite dar boa noite somente depois das 18h
-                boanoite = Manipular_dia.obter_boanoite(message.author.id)
-                if boanoite:
-                    if boanoite["data_boanoite"].date() != dia_atual:
-                        print(boanoite["data_boanoite"], dia_atual)
-                        Manipular_dia.registrar_boanoite(message.author.id)
-                        
-                    else:
-                        return
-                else:
-                    Manipular_dia.registrar_boanoite(message.author.id)
-                    await message.channel.send(f"Boa noite, {message.author.mention}!")
-            else:
-                return
-            usuario_registrado = Obter_Usuario.Manipular_Usuario.obter_usuario(
-                id_discord
-            )
-            if usuario_registrado:
-                usuario_atualizado = Obter_Usuario.Manipular_Usuario.adicionar_moedas(
-                    id_discord, moedas_ganhas
-                )
-                usuario_atualizado = Obter_Usuario.Manipular_Usuario.adicionar_xp(
-                    id_discord, xp_ganho
-                )
-                print(usuario_atualizado)
+        # Só registra e recompensa se a saudação for do período certo do dia
+        if not Manipular_saudacao.eh_periodo_valido(saudacao, agora.hour):
+            return
+
+        tipo = Manipular_saudacao.TIPO_BANCO[saudacao]
+        registro = Manipular_dia.obter_saudacao(id_discord, tipo)
+        if registro and registro["data"].date() == agora.date():
+            return  # Já saudou hoje
+
+        Manipular_dia.registrar_saudacao(id_discord, tipo)
+
+        usuario_registrado = Obter_Usuario.Manipular_Usuario.obter_usuario(id_discord)
+        if not usuario_registrado:
+            return
+
+        moedas_ganhas = random.randint(1, 5)
+        xp_ganho = random.randint(10, 50)
+        Obter_Usuario.Manipular_Usuario.adicionar_moedas(id_discord, moedas_ganhas)
+        Obter_Usuario.Manipular_Usuario.adicionar_xp(id_discord, xp_ganho)
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(MonitorarSaudacoes(bot))

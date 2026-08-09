@@ -1,127 +1,199 @@
 # Comandos
-Aqui estão os comandos do bot
+
+Aqui estão todos os comandos do bot, separados por categoria. Os comandos de barra (`/`) são registrados automaticamente; os comandos com prefixo (`$`) são escritos no chat.
 
 - [Gerais](#gerais)
-- [Registrado](#registrados)
-- [Adms](#administração)
+- [Perfil e Imagens](#perfil-e-imagens)
+- [Jogo de Personagens](#jogo-de-personagens)
+- [Administração](#administração)
 
-## Gerais
+---
 
-### /ajuda
-Seu comando inicial sendo para ajudar aqueles que convidaram o bot
+# Gerais
 
-ele vai mostrar informações sobre o bot sendo essas informações sobre :
+## /ajuda
+É o comando inicial, pensado para quem acabou de adicionar o bot. Ele mostra um menu com informações sobre:
+
 - Sobre o bot
-- Comando gerais
-- Comando perfil
-- Comando imagens
-- Comando imagens
-- Comando Ticket
+- Comandos gerais
+- Comandos de perfil
+- Comandos de imagens
+- Comandos de moderação
+- Comandos de ticket
 - Cargos
 - Feed
 - Links
+- Jogo de personagens
 
 ![sobre-bor](./img/sobre.png)
 
-## / Avatar
+## /ping
+Verifica a latência do bot, respondendo com o tempo de resposta em milissegundos.
 
-O comando avatar vai mostrar todos os avatares da pessoa ja registrado, se voce usar o /avatar o bot vai colocar seu ou o avatar da pessoa mencionada em um historico, e mostrar os avatares que ele salvou
+## /avatar
+Mostra todos os avatares da pessoa já registrados em um histórico. Ao usar o comando, o bot salva o avatar atual (seu ou da pessoa mencionada) no histórico e exibe os avatares salvos.
 
 ![avatar](./img/avatar.png)
 
-## / Registrar
+---
 
-o comando / Registrar é o comando que voce vai utilizar para cadastrar um perfil no bot, com seu perfil feito voce sera capaz de mandar imagens para o banco de dados do bot, **caso voce ja tenha se registrado, ele vai atualizar seu perfil**
-Para se registrar voce envia as informações de
-- Nome : Nome que vai ficar no seu perfil
-- Descrição : A descrição do perfil com no maximo 255 caracteres
-- Social : Url ou @ de uma rede social sua para as pessoa poderem entrar em contato
-- Pronomes : pronomes para se referir a ti (opcional)
+# Perfil e Imagens
+
+## /registrar
+Cadastra um perfil no bot. Com o perfil criado, você pode enviar imagens para o banco de dados do bot.
+
+> Se você já estiver registrado, o comando **atualiza** seu perfil.
+
+Para se registrar, informe:
+
+- **Nome:** nome que vai aparecer no seu perfil
+- **Descrição:** descrição do perfil, com no máximo 255 caracteres
+- **Social:** URL ou `@` de uma rede social para as pessoas entrarem em contato
+- **Pronomes:** pronomes para se referir a você (opcional)
 
 ![registrar](./img/registrar.png)
 
-## / Perfil
+## /perfil
+Mostra o perfil (seu ou da pessoa mencionada), junto com todas as imagens que a pessoa já enviou.
 
-Mostrar o perfil seu ou da pessoa mencionada, assim como todas as imagens que a pessoa ja enviou
-> Voce só pode pegar o perfil de uma pessoa registrada
+> Só é possível ver o perfil de uma pessoa registrada.
 
 ![perfil](./img/perfil.png)
 
+## /usuarios_registrados
+Exibe uma lista dos usuários registrados no sistema do bot, com navegação entre os perfis.
+
+## /adicionar_imagem
+> Requer registro e anexo de uma imagem com descrição.
+
+Envia uma imagem para todos os chats configurados como `feed` nos servidores em que o bot está. Ganhe moedas e XP a cada imagem enviada (limite de uma imagem por dia).
+
 ## /imagem_aleatoria
+Retorna uma imagem aleatória salva no banco de dados do bot.
 
-o `/imagem_aleatoria` te retonar uma imagem aleatoria que esta salva no banco de dados do bot
-> Se quiser saber mais [Clique aqui](./extras.md)
+> Se quiser saber mais sobre o conceito, [clique aqui](./extras.md).
 
-## /enviar_ticket
+## /minhas_imagens
+Lista todas as imagens que você já enviou, com o `ID` de cada uma.
 
-Caso esteja configurado no seu servidor, o usuario poderar abrir um ticket _Uma conversa privada com os adms_
+## /remover_imagem
+> Requer o `ID` da imagem.
 
-## / usuarios_registrados
+Remove uma imagem que você enviou. O `ID` pode ser obtido com `/minhas_imagens`.
 
-Exiber uma lista dos usuarios que estão registrados no sistema do bot
+## /remover_imagens
+> Apenas o dono do bot (User Master).
 
-# Registrados
-**Esses comandos podem ser enviados somente por quem é registrado**
+Remove **todas** as imagens enviadas por um usuário específico.
 
-## / adicionar_imagem
-> Requer : [imagem] e [descrição]
+---
 
-Para enviar uma imagem, voce apenas precisa escrever o comando, e anexar um arquivo de imagem, e uma descrição para ela enviar em todos os chats que estão configurados como `feed` nos servidores que ela esta
+# Jogo de Personagens
 
-## / minhas_imagens
-Esse comando vai te retonar uma lista de todas as imagens que voce ja enviou
+O bot sorteia um personagem misterioso de uma API externa, e você precisa adivinhar o nome no chat. Acertando, o personagem é adicionado à sua coleção.
 
-## / remover_imagem
-> Requer : [imagem_id]
+## $jogar
+Inicia uma partida de adivinhação. Você tem um número limitado de tentativas por servidor, que são resetadas após 30 minutos. Durante a partida, responda no chat com o nome do personagem, `ff` ou `desisto!` para desistir.
 
-Para remover uma imagem que voce enviou voce precisa digitar o comando /remover_imagem, e enviar o id da imagen que voce quer remover
-> Voce pode conseguir o id com o comando `/minhas_imagens`
+> Comandos de chat (`$`), não de barra.
+
+## /listar_personagens
+Lista todos os personagens que você capturou no servidor, com opção de editar a descrição de cada um.
+
+## /verificar_personagem
+> Requer `nome` e `franquia`.
+
+Verifica se um personagem já foi descoberto no servidor e mostra quem o capturou.
+
+## /doar_personagem
+> Requer `nome`, `franquia` e `user`.
+
+Envia um personagem seu para outro jogador. O destinatário responde no chat com `sim` (ou `s`) para aceitar, ou `não` (ou `n`) para recusar. A troca expira em 26 segundos.
+
+---
 
 # Administração
-Esses comandos podem ser executados somente pela administração do servidor
+Comandos executados somente pela administração do servidor (permissão de gerenciar servidor).
 
-## / configurar_cargo
-> Requer : [cargo]
+## /configurar_cargo
+> Requer um [cargo].
 
-Voce pode colocar um cargo que voce deseja que pessoa tenha OU *VARIOS CARGOS PARA DESCIDIR ALEATORIAMENTE*
+Adiciona um cargo à lista de cargos atribuídos automaticamente a novos membros.
+
 #### Exemplo
-Voce colocar 3 cargos no bot : `time_1` / `time_2` / `time_3`
-Quando alguem novo entrar no seu servidor o bot vai descidi entre os 3 cargos e aplicar para o usuario rescem chegado
+Com 3 cargos configurados (`time_1`, `time_2`, `time_3`), quando alguém novo entrar no servidor o bot sorteia um deles e aplica ao recém-chegado.
 
-## / listar_cargos
-Lista todos os cargos configurados
+## /listar_cargos
+Lista todos os cargos configurados no servidor.
 
-# / remover_cargo
-> Requer : [cargo]
+## /remover_cargo
+> Requer um [cargo].
 
- Remove um cargo da lista de cargos
+Remove um cargo da lista de cargos configurados.
 
-# /configurar_chat
-> Requer : [Chat]
+## /roletar_cargo
+Rerola (sorteia novamente) os cargos de **todos** os membros do servidor. Essa ação é **irreversível** e pede confirmação antes de executar.
 
-Configura um canal para reagir com emojis em mensagens de imagens, quando voce mandar uma mensagem no canal especificado ele não faz nada, mas se for uma imagem ele reage com os emoticons
+## /configurar_chat
+> Requer um [canal].
+
+Configura um canal para reagir com emojis em imagens. Textos comuns não recebem reação, mas mensagens com imagem (anexos ou URLs) recebem os emojis automáticos.
+
 ### Exemplo
 ![reacoes](./img/reacaoes.png)
 
-# /listar_chats
-Lista todos os canais configurados para reações
+## /listar_chats
+Lista todos os canais configurados para reações.
 
-# /remover_chat
-> Requer : [Chat]
+## /remover_chat
+> Requer um [canal].
 
-Remove um canal da lista de reações
+Remove um canal da lista de canais de reação.
 
-# /configurar_feed
-> Requer : [Chat]
+## /configurar_feed
+> Requer um [canal].
 
-Configura um canal para que quando voce envie uma imagem, todos os servidores que possuem esse feed nele possam receber a imagem do comando [/adicionar_imagem](#-adicionar_imagem)
+Configura um canal para receber as imagens enviadas pelo comando [/adicionar_imagem](#adicionar_imagem). Assim, imagens enviadas em qualquer servidor aparecem em todos os feeds configurados.
+
 ### Exemplo
-![reacoes](./img/imagem-exemplofeed.png)
+![feed](./img/imagem-exemplofeed.png)
 
-# /listar_feeds
-Lista todos os canais configurados para feeds
+## /listar_feeds
+Lista todos os canais configurados para feeds.
 
-# /remover_feeds
-> Requer : [Chat]
+## /remover_feed
+> Requer um [canal].
 
-Remove um canal da lista de feeds
+Remove um canal da lista de feeds.
+
+## /enviar_ticket
+Abre um novo ticket, uma conversa privada com a administração do servidor.
+
+> Requer que o sistema de tickets esteja configurado com `/configurar_ticket`.
+
+## /apagar_ticket
+Fecha o ticket atual. Só pode ser usado em um canal de ticket, pelo criador ou por quem tem o cargo configurado. O canal é apagado 5 segundos após a confirmação.
+
+## /configurar_ticket
+> Requer uma [categoria] e um [cargo].
+
+Configura a categoria onde os tickets serão criados e o cargo com permissão para gerenciá-los. Também aplica as permissões na categoria.
+
+## /remover_config_ticket
+Remove a configuração de ticket do servidor.
+
+## /ver_config_ticket
+Mostra a categoria e o cargo atualmente configurados para tickets.
+
+---
+
+# Extras
+
+## $r
+Rola dados no formato `XdY`, onde `X` é a quantidade e `Y` o número de lados.
+
+#### Exemplo
+```
+$r 2d20
+```
+Resultado: `Resultados do dado de 2d20: [14, 7]`

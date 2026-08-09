@@ -5,6 +5,7 @@
 imagens_avatars
 imagens_usuarios
 imagens_temp
+data
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
