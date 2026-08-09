@@ -1,7 +1,11 @@
+import os
 from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy import inspect, text
 
-engine = create_engine("sqlite:///dados.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///dados.db")
+
+engine = create_engine(DATABASE_URL)
 Base = declarative_base()
 _Sessao = sessionmaker(engine)
 
@@ -59,8 +63,10 @@ class DiaGuarda(Base):
     id = Column(Integer, primary_key=True, index=True)
     id_discord = Column(String, nullable=True)
     bomdia = Column(Integer, default=0, nullable=False)
+    boatarde = Column(Integer, default=0, nullable=False)
     boanoite = Column(Integer, default=0, nullable=False)
     bomdia_data = Column(DateTime, nullable=False)
+    boatarde_data = Column(DateTime, nullable=False)
     boanoite_data = Column(DateTime, nullable=False)
 
 
@@ -69,6 +75,7 @@ class FeedConfig(Base):
     id = Column(Integer, primary_key=True, index=True)
     guild_id = Column(String, nullable=False, index=True)
     channel_id = Column(String, nullable=False, index=True)
+
 
 class Personagem(Base):
     __tablename__ = "personagem"
@@ -94,3 +101,24 @@ class TicketConfig(Base):
 
 
 Base.metadata.create_all(engine)
+
+
+def _migrar_colunas():
+    """Adiciona colunas novas a tabelas existentes sem apagar os dados."""
+    with engine.connect() as conn:
+        colunas = {coluna["name"] for coluna in inspect(conn).get_columns("diaGuarda")}
+        novas_colunas = {
+            "boatarde": (
+                "ALTER TABLE diaGuarda ADD COLUMN boatarde INTEGER DEFAULT 0 NOT NULL"
+            ),
+            "boatarde_data": (
+                "ALTER TABLE diaGuarda ADD COLUMN boatarde_data DATETIME DEFAULT '1900-01-01 00:00:00'"
+            ),
+        }
+        for nome, comando in novas_colunas.items():
+            if nome not in colunas:
+                conn.execute(text(comando))
+        conn.commit()
+
+
+_migrar_colunas()

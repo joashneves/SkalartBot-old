@@ -81,6 +81,11 @@ class Cargos(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member):
+        """Atribui um cargo automaticamente quando um membro entra no servidor."""
+        await Obter_cargo.Manipular_Cargo.atribuir_cargo(member)
+
     @app_commands.command(
         name="configurar_cargo",
         description="Adiciona um cargo à lista de cargos a serem atribuídos automaticamente.",

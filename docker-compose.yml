@@ -1,0 +1,14 @@
+services:
+  skalart:
+    build: .
+    container_name: skalartbot
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=sqlite:////app/data/dados.db
+    volumes:
+      - ./data:/app/data
+      - ./imagens_avatars:/app/imagens_avatars
+      - ./imagens_usuarios:/app/imagens_usuarios
+      - ./imagens_temp:/app/imagens_temp
+    restart: unless-stopped
