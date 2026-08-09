@@ -4,6 +4,10 @@ Aqui estão todos os comandos do bot, separados por categoria. Os comandos de ba
 
 - [Gerais](#gerais)
 - [Perfil e Imagens](#perfil-e-imagens)
+- [Economia](#economia)
+- [Diversão](#diversão)
+- [Utilidades](#utilidades)
+- [Notícias e Streams](#notícias-e-streams)
 - [Jogo de Personagens](#jogo-de-personagens)
 - [Administração](#administração)
 
@@ -85,6 +89,122 @@ Remove uma imagem que você enviou. O `ID` pode ser obtido com `/minhas_imagens`
 > Apenas o dono do bot (User Master).
 
 Remove **todas** as imagens enviadas por um usuário específico.
+
+---
+
+# Economia
+
+## /daily
+Resgata sua recompensa diária de moedas. Quanto mais dias seguidos você resgatar, mais moedas ganha (streak de até 7 dias).
+
+## /rank
+Mostra o ranking do servidor por **moedas** ou **XP**. Escolha o critério com `/rank tipo:xp` (padrão é moedas).
+
+## /xp
+Mostra seu nível, saldo, XP atual, XP necessário e barra de progresso até o próximo nível.
+
+---
+
+# Diversão
+
+## /meme
+Envia um meme aleatório do Reddit.
+
+## /piada
+Envia uma piada aleatória em português.
+
+## /clima
+> Requer `OPENWEATHER_API_KEY` no `.env` (chave gratuita em [openweathermap.org](https://openweathermap.org/api)).
+
+Mostra o clima atual de uma cidade, com temperatura, sensação térmica, umidade e vento.
+
+---
+
+# Utilidades
+
+## /lembrete
+Cria um lembrete que será enviado no seu **privado** (DM). Formato da duração: `30s`, `10m`, `2h`, `1d`, `1h30m`.
+
+#### Exemplo
+```
+/lembrete duracao:30m texto:Beber água
+```
+
+## /lembretes
+Lista seus lembretes pendentes, com o ID de cada um.
+
+## /cancelar_lembrete
+Cancela um lembrete pendente usando o ID (veja com `/lembretes`).
+
+## /sugestao
+> Requer que o servidor tenha configurado um canal de sugestões.
+
+Envia uma sugestão para o canal configurado, com votos de 👍 e 👎.
+
+## /configurar_sugestao
+> Apenas administração.
+
+Define o canal onde as sugestões serão enviadas.
+
+## /atividade
+Mostra suas estatísticas de mensagens no servidor (hoje, total e dias ativos).
+
+## /top_atividade
+Mostra os membros mais ativos do servidor **hoje**.
+
+## /top_atividade_total
+Mostra os membros mais ativos do servidor no **total**.
+
+## /configurar_slowmode
+> Apenas administração.
+
+Define um **nível mínimo** para falar em um canal. Mensagens de quem não tem o nível são apagadas automaticamente. Use `nivel:0` para remover a restrição.
+
+## /listar_slowmodes
+> Apenas administração.
+
+Lista os canais com restrição de nível configurados.
+
+---
+
+# Notícias e Streams
+
+## Notícias geek (RSS)
+
+## /noticias_feeds_fixos
+Mostra feeds geek prontos para usar (Jovem Nerd, TecMundo, IGN Brasil, Tecnoblog, Meio Bit).
+
+## /noticias_configurar_feed
+> Apenas administração. Requer um canal de feed configurado com `/configurar_feed`.
+
+Adiciona um feed RSS geek ao servidor. As notícias novas são postadas automaticamente no canal de feed (a cada 15 minutos).
+
+## /noticias_listar_feeds
+> Apenas administração.
+
+Lista os feeds RSS configurados no servidor.
+
+## /noticias_remover_feed
+> Apenas administração.
+
+Remove um feed RSS configurado.
+
+## Twitch e YouTube
+
+## /streams_configurar
+> Apenas administração. Requer `TWITCH_CLIENT_ID`, `TWITCH_SECRET` e `YOUTUBE_API_KEY` no `.env`.
+
+Configura um canal Twitch (pelo nome) ou YouTube (pelo ID do canal) para avisar automaticamente quando o streamer **entrar em live** ou **publicar um vídeo novo**. O aviso é enviado no canal de postagem escolhido.
+
+## /streams_listar
+> Apenas administração.
+
+Lista os canais Twitch/YouTube monitorados no servidor.
+
+## /streams_remover
+> Apenas administração.
+
+Remove um canal Twitch/YouTube do monitoramento.
 
 ---
 

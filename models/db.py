@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, DateTime
+from sqlalchemy import create_engine, Column, String, Integer, DateTime, Boolean
 from sqlalchemy.orm import declarative_base, sessionmaker
 from sqlalchemy import inspect, text
 
@@ -7,7 +7,7 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///dados.db")
 
 engine = create_engine(DATABASE_URL)
 Base = declarative_base()
-_Sessao = sessionmaker(engine)
+_Sessao = sessionmaker(engine, expire_on_commit=False)
 
 
 class Usuario(Base):
@@ -98,6 +98,80 @@ class TicketConfig(Base):
     guild_id = Column(String, nullable=True)
     categoria_id = Column(String, nullable=True)
     cargo_id = Column(String, nullable=True)
+
+
+class DailyGuarda(Base):
+    __tablename__ = "dailyGuarda"
+    id = Column(Integer, primary_key=True, index=True)
+    id_discord = Column(String, nullable=True, index=True)
+    ultima_data = Column(String, nullable=True)  # yyyy-mm-dd
+    streak = Column(Integer, default=0)
+
+
+class Sugestao(Base):
+    __tablename__ = "sugestoes"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=True, index=True)
+    id_discord = Column(String, nullable=True)
+    texto = Column(String, nullable=True)
+    canal_id = Column(String, nullable=True)
+    mensagem_id = Column(String, nullable=True)
+    data_criacao = Column(DateTime, nullable=True)
+
+
+class SugestaoConfig(Base):
+    __tablename__ = "sugestao_config"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=True, index=True)
+    channel_id = Column(String, nullable=True)
+
+
+class Lembrete(Base):
+    __tablename__ = "lembretes"
+    id = Column(Integer, primary_key=True, index=True)
+    id_discord = Column(String, nullable=True, index=True)
+    texto = Column(String, nullable=True)
+    data_agendada = Column(DateTime, nullable=True)
+    criado_em = Column(DateTime, nullable=True)
+    canal_id = Column(String, nullable=True)
+    guild_id = Column(String, nullable=True)
+    enviado = Column(Boolean, default=False)
+
+
+class SlowmodeNivel(Base):
+    __tablename__ = "slowmode_nivel"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=True, index=True)
+    channel_id = Column(String, nullable=True, index=True)
+    nivel_minimo = Column(Integer, default=0)
+
+
+class AtividadeGuarda(Base):
+    __tablename__ = "atividadeGuarda"
+    id = Column(Integer, primary_key=True, index=True)
+    id_discord = Column(String, nullable=True, index=True)
+    guild_id = Column(String, nullable=True, index=True)
+    data = Column(String, nullable=True)  # yyyy-mm-dd
+    mensagens = Column(Integer, default=0)
+
+
+class NoticiaConfig(Base):
+    __tablename__ = "noticia_config"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=True, index=True)
+    feed_url = Column(String, nullable=True)
+    canal_id = Column(String, nullable=True)
+    ultimo_link = Column(String, nullable=True)
+
+
+class StreamConfig(Base):
+    __tablename__ = "stream_config"
+    id = Column(Integer, primary_key=True, index=True)
+    guild_id = Column(String, nullable=True, index=True)
+    tipo = Column(String, nullable=True)  # "twitch" ou "youtube"
+    canal_identificador = Column(String, nullable=True)
+    canal_postagem = Column(String, nullable=True)
+    ultimo_item = Column(String, nullable=True)
 
 
 Base.metadata.create_all(engine)

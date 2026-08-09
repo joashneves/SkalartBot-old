@@ -234,6 +234,40 @@ class Registrar(commands.Cog):
             await interaction.response.send_message(embed=embed)
 
     @app_commands.command(
+        name="xp", description="Mostra o seu XP, nível e o progresso até o próximo nível."
+    )
+    async def xp(self, interaction: discord.Interaction):
+        id_discord = str(interaction.user.id)
+        usuario = Obter_Usuario.Manipular_Usuario.obter_usuario(id_discord)
+
+        if not usuario:
+            await interaction.response.send_message(
+                "❌ Você não está registrado! Use `/registrar` primeiro.",
+                ephemeral=True,
+            )
+            return
+
+        xp_atual = usuario.xp
+        xp_necessario = 100 * ((usuario.level + 1) * 2.5)
+        progresso = min(xp_atual / xp_necessario * 100, 100)
+        barra = "█" * int(progresso // 10) + "░" * (10 - int(progresso // 10))
+
+        embed = discord.Embed(
+            title=f"📊 XP de {interaction.user.display_name}",
+            color=discord.Color.gold(),
+        )
+        embed.add_field(name="Level", value=f"`{usuario.level}`", inline=True)
+        embed.add_field(name="Saldo", value=f"`{usuario.saldo}` moedas", inline=True)
+        embed.add_field(
+            name="Progresso",
+            value=f"{barra} `{xp_atual:.0f}/{xp_necessario:.0f}` XP",
+            inline=False,
+        )
+        embed.set_thumbnail(url=interaction.user.display_avatar.url)
+        await interaction.response.send_message(embed=embed)
+
+
+    @app_commands.command(
         name="usuarios_registrados",
         description="Exibe todos os usuários registrados no sistema",
     )

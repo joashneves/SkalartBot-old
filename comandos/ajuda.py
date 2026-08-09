@@ -53,6 +53,26 @@ class AjudaSelect(Select):
                 description="Capture e adivinhe personagens com $jogar.",
                 emoji="🎮",
             ),
+            discord.SelectOption(
+                label="Economia",
+                description="Daily, moedas e rankings.",
+                emoji="💰",
+            ),
+            discord.SelectOption(
+                label="Diversão",
+                description="Memes, piadas e clima.",
+                emoji="😂",
+            ),
+            discord.SelectOption(
+                label="Utilidades",
+                description="Lembretes, sugestões, atividade e slowmode.",
+                emoji="🧰",
+            ),
+            discord.SelectOption(
+                label="Notícias e Streams",
+                description="Feeds geek e avisos de live/vídeo.",
+                emoji="📡",
+            ),
         ]
         super().__init__(placeholder="Escolha uma opção...", options=options)
 
@@ -159,7 +179,51 @@ class AjudaSelect(Select):
                 "**O que você pode fazer com seus personagens:**\n"
                 "- Ver sua coleção e editar as descrições com `/listar_personagens`.\n"
                 "- Doar personagens para outros jogadores com `/doar_personagem`.\n\n"
-                "**Dica:** Quanto mais você jogar, maior será sua coleção!\n"
+                 "**Dica:** Quanto mais você jogar, maior será sua coleção!\n"
+            )
+        elif escolha == "Economia":
+            embed.description = (
+                "💰 **Economia:**\n"
+                "- `/daily`: Resgata sua recompensa diária de moedas (quanto mais dias seguidos, mais moedas).\n"
+                "- `/rank`: Mostra o ranking do servidor por moedas ou XP.\n"
+                "- `/xp`: Mostra seu nível, XP e progresso.\n\n"
+                "**Como ganhar moedas/XP:**\n"
+                "- Resgatar o daily todos os dias.\n"
+                "- Acertar personagens no `$jogar`.\n"
+                "- Falar no servidor para ganhar XP e subir de nível."
+            )
+        elif escolha == "Diversão":
+            embed.description = (
+                "😂 **Diversão:**\n"
+                "- `/meme`: Envia um meme aleatório do Reddit.\n"
+                "- `/piada`: Envia uma piada aleatória em português.\n"
+                "- `/clima`: Mostra o clima de uma cidade (requer `OPENWEATHER_API_KEY` no .env)."
+            )
+        elif escolha == "Utilidades":
+            embed.description = (
+                "🧰 **Utilidades:**\n"
+                "- `/lembrete 30m Beber água`: Agenda um lembrete que chega no seu **privado**.\n"
+                "- `/lembretes`: Lista seus lembretes pendentes.\n"
+                "- `/cancelar_lembrete <id>`: Cancela um lembrete.\n"
+                "- `/sugestao <texto>`: Envia uma sugestão para o canal de sugestões.\n"
+                "- `/configurar_sugestao <canal>`: Define o canal de sugestões (admin).\n"
+                "- `/atividade`: Suas estatísticas de mensagens.\n"
+                "- `/top_atividade` e `/top_atividade_total`: Membros mais ativos.\n"
+                "- `/configurar_slowmode <canal> <nivel>`: Exige nível mínimo para falar num canal (admin).\n"
+                "- `/listar_slowmodes`: Lista canais com restrição de nível (admin)."
+            )
+        elif escolha == "Notícias e Streams":
+            embed.description = (
+                "📡 **Notícias e Streams:**\n\n"
+                "**Notícias geek (RSS):**\n"
+                "- `/noticias_feeds_fixos`: Vê feeds prontos (Jovem Nerd, TecMundo, IGN, etc.).\n"
+                "- `/noticias_configurar_feed <url>`: Adiciona um feed RSS (admin).\n"
+                "- `/noticias_listar_feeds` e `/noticias_remover_feed`: Gerencia os feeds (admin).\n"
+                "- As notícias são postadas no canal de feed configurado com `/configurar_feed`.\n\n"
+                "**Twitch/YouTube:**\n"
+                "- `/streams_configurar`: Configura um canal Twitch ou YouTube para avisar de lives e vídeos novos.\n"
+                "- `/streams_listar` e `/streams_remover`: Gerenciam os canais monitorados (admin).\n"
+                "- Requer `TWITCH_CLIENT_ID`, `TWITCH_SECRET` e `YOUTUBE_API_KEY` no .env."
             )
 
 

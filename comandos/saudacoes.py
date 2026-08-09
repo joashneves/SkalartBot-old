@@ -1,9 +1,7 @@
-import discord
 from discord.ext import commands
 from datetime import datetime
 import random
 import pytz
-
 from models import Obter_Usuario
 from models.Obter_dia import Manipular_dia
 from models.Obter_saudacao import Manipular_saudacao

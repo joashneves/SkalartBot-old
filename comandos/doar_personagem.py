@@ -1,12 +1,10 @@
 import discord
-from discord import app_commands
 from discord.ext import commands
+from discord import app_commands
 import asyncio
 from asyncio import TaskGroup
-import models
 from models.Obter_personagem import Manipular_Personagem
 import os
-import json
 import aiohttp
 import hashlib
 

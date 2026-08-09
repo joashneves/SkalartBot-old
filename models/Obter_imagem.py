@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from models.db import _Sessao, ImagemGuarda
 import os
 import random

@@ -1,8 +1,5 @@
-from datetime import datetime, timedelta
 from models.db import _Sessao, Personagem
 from sqlalchemy import func
-import os
-import random
 
 class Manipular_Personagem:
     def obter_todos_personages(id_discord, guild_id):

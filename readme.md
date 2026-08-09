@@ -163,7 +163,7 @@ Os volumes do `docker-compose.yml` garantem que o banco de dados e as imagens en
 | `./imagens_usuarios` | `/app/imagens_usuarios` | imagens dos usuários |
 | `./imagens_temp`  | `/app/imagens_temp`    | imagens temporárias |
 
-> A variável `DATABASE_URL` aponta para `sqlite:///app/data/dados.db` dentro do container.
+> A variável `DATABASE_URL` aponta para `sqlite:////app/data/dados.db` dentro do container (caminho absoluto do SQLite requer quatro barras).
 
 ---
 
