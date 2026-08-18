@@ -1,5 +1,3 @@
-import os
-import hashlib
 from datetime import datetime
 from models.db import _Sessao, AvatarSalvo
 

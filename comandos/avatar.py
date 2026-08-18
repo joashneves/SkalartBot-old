@@ -5,8 +5,6 @@ import os
 import aiohttp
 import hashlib
 from datetime import datetime
-from models.db import _Sessao, AvatarSalvo
-from pathlib import Path
 from models.Obter_avatar import Manipular_Avatar
 
 AVATAR_DIR = "imagens_avatars"

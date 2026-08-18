@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 import random
 import aiohttp
 import hashlib
-from datetime import datetime
 
 # Diretório para salvar as imagens
 IMAGENS_DIR = "imagens_usuarios"

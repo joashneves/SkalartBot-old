@@ -26,6 +26,7 @@ class Manipular_Usuario:
                 usuario.descricao = descricao
                 usuario.rede_social = rede_social or usuario.rede_social
                 usuario.pronome = pronome or usuario.pronome
+                sessao.commit()
                 print(f"Usuário {id_discord} atualizado com sucesso.")
                 return usuario
             return "Usuario não existe"

@@ -2,7 +2,6 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.ui import Modal, TextInput
-import models
 from models.Obter_ticket import Manipular_Ticket
 import asyncio
 
