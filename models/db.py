@@ -172,6 +172,9 @@ class StreamConfig(Base):
     canal_identificador = Column(String, nullable=True)
     canal_postagem = Column(String, nullable=True)
     ultimo_item = Column(String, nullable=True)
+    cargos = Column(
+        String, nullable=True, default=""
+    )  # IDs de cargos separados por vírgula
 
 
 Base.metadata.create_all(engine)
@@ -180,18 +183,31 @@ Base.metadata.create_all(engine)
 def _migrar_colunas():
     """Adiciona colunas novas a tabelas existentes sem apagar os dados."""
     with engine.connect() as conn:
-        colunas = {coluna["name"] for coluna in inspect(conn).get_columns("diaGuarda")}
-        novas_colunas = {
-            "boatarde": (
-                "ALTER TABLE diaGuarda ADD COLUMN boatarde INTEGER DEFAULT 0 NOT NULL"
-            ),
-            "boatarde_data": (
-                "ALTER TABLE diaGuarda ADD COLUMN boatarde_data DATETIME DEFAULT '1900-01-01 00:00:00'"
-            ),
-        }
-        for nome, comando in novas_colunas.items():
-            if nome not in colunas:
-                conn.execute(text(comando))
+        if inspect(conn).has_table("diaGuarda"):
+            colunas = {
+                coluna["name"] for coluna in inspect(conn).get_columns("diaGuarda")
+            }
+            novas_colunas = {
+                "boatarde": (
+                    "ALTER TABLE diaGuarda ADD COLUMN boatarde INTEGER DEFAULT 0 NOT NULL"
+                ),
+                "boatarde_data": (
+                    "ALTER TABLE diaGuarda ADD COLUMN boatarde_data DATETIME DEFAULT '1900-01-01 00:00:00'"
+                ),
+            }
+            for nome, comando in novas_colunas.items():
+                if nome not in colunas:
+                    conn.execute(text(comando))
+        if inspect(conn).has_table("stream_config"):
+            colunas = {
+                coluna["name"] for coluna in inspect(conn).get_columns("stream_config")
+            }
+            if "cargos" not in colunas:
+                conn.execute(
+                    text(
+                        "ALTER TABLE stream_config ADD COLUMN cargos VARCHAR DEFAULT ''"
+                    )
+                )
         conn.commit()
 
 

@@ -164,7 +164,9 @@ class TestNoticia:
         assert feeds[0].feed_url == "https://exemplo.com/feed"
 
     def test_atualizar_ultimo_link(self):
-        config = Manipular_Noticia.adicionar_feed("g1", "https://exemplo.com/feed", "123")
+        config = Manipular_Noticia.adicionar_feed(
+            "g1", "https://exemplo.com/feed", "123"
+        )
         assert Manipular_Noticia.atualizar_ultimo_link(config.id, "link1") is True
         feeds = Manipular_Noticia.listar_feeds("g1")
         assert feeds[0].ultimo_link == "link1"
@@ -186,3 +188,35 @@ class TestStream:
     def test_atualizar_ultimo_item(self):
         config = Manipular_Stream.adicionar_stream("g1", "twitch", "c", "123")
         assert Manipular_Stream.atualizar_ultimo_item(config.id, "item1") is True
+
+    def test_adicionar_stream_com_cargos(self):
+        config = Manipular_Stream.adicionar_stream(
+            "g1", "twitch", "meucanal", "123", cargos=["111", "222"]
+        )
+        assert Manipular_Stream._cargos_para_lista(config.cargos) == ["111", "222"]
+
+    def test_configurar_sem_cargos_preserva_existentes(self):
+        Manipular_Stream.adicionar_stream(
+            "g1", "twitch", "meucanal", "123", cargos=["111"]
+        )
+        config = Manipular_Stream.adicionar_stream("g1", "twitch", "meucanal", "456")
+        assert Manipular_Stream._cargos_para_lista(config.cargos) == ["111"]
+
+    def test_adicionar_e_remover_cargo(self):
+        Manipular_Stream.adicionar_stream("g1", "twitch", "meucanal", "123")
+        config = Manipular_Stream.adicionar_cargo("g1", "twitch", "meucanal", "111")
+        assert config is not None
+        assert Manipular_Stream._cargos_para_lista(config.cargos) == ["111"]
+        config = Manipular_Stream.adicionar_cargo("g1", "twitch", "meucanal", "111")
+        assert len(Manipular_Stream._cargos_para_lista(config.cargos)) == 1
+        config = Manipular_Stream.adicionar_cargo("g1", "twitch", "meucanal", "222")
+        assert sorted(Manipular_Stream._cargos_para_lista(config.cargos)) == [
+            "111",
+            "222",
+        ]
+        config = Manipular_Stream.remover_cargo("g1", "twitch", "meucanal", "111")
+        assert Manipular_Stream._cargos_para_lista(config.cargos) == ["222"]
+
+    def test_cargo_em_canal_nao_configurado(self):
+        assert Manipular_Stream.adicionar_cargo("g1", "twitch", "outro", "111") is None
+        assert Manipular_Stream.remover_cargo("g1", "twitch", "outro", "111") is None

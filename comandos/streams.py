@@ -1,5 +1,6 @@
 import asyncio
 import os
+import time
 import discord
 from discord.ext import commands, tasks
 from discord import app_commands
@@ -12,6 +13,21 @@ TWITCH_TOKEN_URL = "https://id.twitch.tv/oauth2/token"
 TWITCH_STREAMS_URL = "https://api.twitch.tv/helix/streams"
 TWITCH_USERS_URL = "https://api.twitch.tv/helix/users"
 YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
+YOUTUBE_CHANNELS_URL = "https://www.googleapis.com/youtube/v3/channels"
+
+
+def _mencionar_cargos(canal: discord.TextChannel, config) -> str:
+    """Monta a menção dos cargos configurados que ainda existem no servidor."""
+    cargos_ids = Manipular_Stream._cargos_para_lista(config.cargos)
+    mencoes = []
+    for cargo_id in cargos_ids:
+        try:
+            cargo = canal.guild.get_role(int(cargo_id))
+        except (ValueError, TypeError):
+            cargo = None
+        if cargo:
+            mencoes.append(cargo.mention)
+    return " ".join(mencoes)
 
 
 def obter_token_twitch():
@@ -34,6 +50,10 @@ def obter_token_twitch():
     except Exception as e:
         print(f"Erro ao obter token da Twitch: {e}")
         return None
+
+
+_youtube_channel_id_cache: dict[str, str] = {}
+_youtube_quota_cooldown_until: float = 0
 
 
 class Streams(commands.Cog):
@@ -79,41 +99,95 @@ class Streams(commands.Cog):
             if not canal:
                 return
 
-            if streams and config.ultimo_item != user_id:
+            if streams and config.ultimo_item != streams[0]["id"]:
                 stream = streams[0]
                 embed = discord.Embed(
                     title=f"🔴 {stream['title']}",
                     description=f"**{config.canal_identificador} está ao vivo!**\n"
                     f"Jogando: {stream['game_name']}\n"
                     f"Viewers: {stream['viewer_count']}",
+                    url=f"https://www.twitch.tv/{config.canal_identificador}",
                     color=discord.Color.purple(),
                 )
                 embed.set_thumbnail(url=dados[0]["profile_image_url"])
-                embed.set_image(url=stream["thumbnail_url"].replace("{width}", "1920").replace("{height}", "1080"))
+                embed.set_image(
+                    url=stream["thumbnail_url"]
+                    .replace("{width}", "1920")
+                    .replace("{height}", "1080")
+                )
                 embed.set_footer(text="Twitch")
-                await canal.send(embed=embed)
-                Manipular_Stream.atualizar_ultimo_item(config.id, user_id)
+                mencao = _mencionar_cargos(canal, config)
+                await canal.send(content=mencao, embed=embed)
+                Manipular_Stream.atualizar_ultimo_item(config.id, stream["id"])
                 print(f"Live detectada: {config.canal_identificador}")
         except Exception as e:
             print(f"Erro ao verificar Twitch {config.canal_identificador}: {e}")
 
     async def verificar_youtube(self, config):
+        global _youtube_quota_cooldown_until
         api_key = os.getenv("YOUTUBE_API_KEY")
         if not api_key:
             return
+
+        now = time.time()
+        if now < _youtube_quota_cooldown_until:
+            return
+
         try:
-            resposta = requests.get(
-                YOUTUBE_SEARCH_URL,
-                params={
-                    "part": "snippet",
-                    "channelId": config.canal_identificador,
-                    "order": "date",
-                    "type": "video",
-                    "maxResults": 1,
-                    "key": api_key,
-                },
-                timeout=10,
-            )
+            canal_identificador = config.canal_identificador
+            channel_id = canal_identificador
+
+            if not canal_identificador.startswith("UC"):
+                if canal_identificador in _youtube_channel_id_cache:
+                    channel_id = _youtube_channel_id_cache[canal_identificador]
+                else:
+                    handle = canal_identificador
+                    if not handle.startswith("@"):
+                        handle = f"@{handle}"
+                    resposta = requests.get(
+                        YOUTUBE_CHANNELS_URL,
+                        params={
+                            "part": "id",
+                            "forHandle": handle,
+                            "key": api_key,
+                        },
+                        timeout=10,
+                    )
+                    if resposta.status_code == 429:
+                        _youtube_quota_cooldown_until = time.time() + 3600
+                        print("YouTube quota excedida (channels). Cooldown de 1h.")
+                        return
+                    resposta.raise_for_status()
+                    canais = resposta.json().get("items", [])
+                    if not canais:
+                        return
+                    channel_id = canais[0]["id"]
+                    _youtube_channel_id_cache[canal_identificador] = channel_id
+
+            max_tentativas = 3
+            resposta = None
+            for tentativa in range(max_tentativas):
+                resposta = requests.get(
+                    YOUTUBE_SEARCH_URL,
+                    params={
+                        "part": "snippet",
+                        "channelId": channel_id,
+                        "order": "date",
+                        "type": "video",
+                        "maxResults": 1,
+                        "key": api_key,
+                    },
+                    timeout=10,
+                )
+                if resposta.status_code == 429:
+                    if tentativa < max_tentativas - 1:
+                        await asyncio.sleep(30 * (tentativa + 1))
+                        continue
+                    else:
+                        _youtube_quota_cooldown_until = time.time() + 3600
+                        print("YouTube quota excedida (search). Cooldown de 1h.")
+                        return
+                break
             resposta.raise_for_status()
             dados = resposta.json().get("items", [])
             if not dados:
@@ -141,7 +215,8 @@ class Streams(commands.Cog):
             except (KeyError, TypeError):
                 pass
             embed.set_footer(text="YouTube")
-            await canal.send(embed=embed)
+            mencao = _mencionar_cargos(canal, config)
+            await canal.send(content=mencao, embed=embed)
             Manipular_Stream.atualizar_ultimo_item(config.id, video_id)
             print(f"Vídeo novo detectado: {snippet['title']}")
         except Exception as e:
@@ -166,8 +241,9 @@ class Streams(commands.Cog):
     )
     @app_commands.describe(
         tipo="O tipo de canal",
-        canal_identificador="Nome do canal Twitch ou ID do canal YouTube",
+        canal_identificador="Nome do canal Twitch ou ID/handle do canal YouTube",
         canal_postagem="Canal do Discord onde o aviso será enviado",
+        cargo="(Opcional) Cargo que será mencionado quando houver live/vídeo",
     )
     @app_commands.choices(
         tipo=[
@@ -182,18 +258,23 @@ class Streams(commands.Cog):
         tipo: app_commands.Choice[str],
         canal_identificador: str,
         canal_postagem: discord.TextChannel,
+        cargo: discord.Role = None,
     ):
+        cargos = [str(cargo.id)] if cargo else None
         Manipular_Stream.adicionar_stream(
             str(interaction.guild_id),
             tipo.value,
             canal_identificador,
             str(canal_postagem.id),
+            cargos=cargos,
         )
-        await interaction.response.send_message(
+        msg = (
             f"✅ **{tipo.value.capitalize()}** `{canal_identificador}` configurado!\n"
-            f"Avisos serão enviados em {canal_postagem.mention}.",
-            ephemeral=True,
+            f"Avisos serão enviados em {canal_postagem.mention}."
         )
+        if cargo:
+            msg += f"\nCargo que será mencionado: {cargo.mention}"
+        await interaction.response.send_message(msg, ephemeral=True)
 
     @app_commands.command(
         name="streams_listar",
@@ -207,16 +288,100 @@ class Streams(commands.Cog):
                 "❌ Nenhum canal Twitch/YouTube configurado.", ephemeral=True
             )
             return
-        linhas = [
-            f"- **{config.tipo.capitalize()}**: `{config.canal_identificador}` → <#{config.canal_postagem}>"
-            for config in configs
-        ]
+        linhas = []
+        for config in configs:
+            cargos = Manipular_Stream._cargos_para_lista(config.cargos)
+            if cargos:
+                nomes = []
+                for cargo_id in cargos:
+                    cargo = interaction.guild.get_role(int(cargo_id))
+                    nomes.append(f"@{cargo.name}" if cargo else f"`{cargo_id}`")
+                cargos_txt = "Cargos: " + ", ".join(nomes)
+            else:
+                cargos_txt = "Cargos: nenhum"
+            linhas.append(
+                f"- **{config.tipo.capitalize()}**: `{config.canal_identificador}` → <#{config.canal_postagem}>\n  {cargos_txt}"
+            )
         embed = discord.Embed(
             title="📺 Canais monitorados",
             description="\n".join(linhas),
             color=discord.Color.purple(),
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    @app_commands.command(
+        name="streams_cargo_adicionar",
+        description="Adiciona um cargo que será mencionado quando o canal iniciar live/vídeo.",
+    )
+    @app_commands.describe(
+        tipo="O tipo de canal",
+        canal_identificador="Nome do canal Twitch ou ID do canal YouTube",
+        cargo="Cargo que será mencionado",
+    )
+    @app_commands.choices(
+        tipo=[
+            app_commands.Choice(name="Twitch", value="twitch"),
+            app_commands.Choice(name="YouTube", value="youtube"),
+        ]
+    )
+    @app_commands.default_permissions(manage_guild=True)
+    async def cargo_adicionar(
+        self,
+        interaction: discord.Interaction,
+        tipo: app_commands.Choice[str],
+        canal_identificador: str,
+        cargo: discord.Role,
+    ):
+        config = Manipular_Stream.adicionar_cargo(
+            str(interaction.guild_id), tipo.value, canal_identificador, str(cargo.id)
+        )
+        if config is None:
+            await interaction.response.send_message(
+                f"❌ **{tipo.value.capitalize()}** `{canal_identificador}` não está configurado. Use `/streams_configurar` primeiro.",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.send_message(
+            f"✅ Cargo {cargo.mention} será mencionado quando **{canal_identificador}** iniciar live/vídeo!",
+            ephemeral=True,
+        )
+
+    @app_commands.command(
+        name="streams_cargo_remover",
+        description="Remove um cargo da lista de menções de um canal.",
+    )
+    @app_commands.describe(
+        tipo="O tipo de canal",
+        canal_identificador="Nome do canal Twitch ou ID do canal YouTube",
+        cargo="Cargo que não deve mais ser mencionado",
+    )
+    @app_commands.choices(
+        tipo=[
+            app_commands.Choice(name="Twitch", value="twitch"),
+            app_commands.Choice(name="YouTube", value="youtube"),
+        ]
+    )
+    @app_commands.default_permissions(manage_guild=True)
+    async def cargo_remover(
+        self,
+        interaction: discord.Interaction,
+        tipo: app_commands.Choice[str],
+        canal_identificador: str,
+        cargo: discord.Role,
+    ):
+        config = Manipular_Stream.remover_cargo(
+            str(interaction.guild_id), tipo.value, canal_identificador, str(cargo.id)
+        )
+        if config is None:
+            await interaction.response.send_message(
+                f"❌ **{tipo.value.capitalize()}** `{canal_identificador}` não está configurado.",
+                ephemeral=True,
+            )
+            return
+        await interaction.response.send_message(
+            f"✅ Cargo {cargo.mention} não será mais mencionado para **{canal_identificador}**.",
+            ephemeral=True,
+        )
 
     @app_commands.command(
         name="streams_remover",
